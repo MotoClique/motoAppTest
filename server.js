@@ -103,8 +103,8 @@ if (mongoURL == null && process.env.DATABASE_SERVICE_NAME) {
 var db = null,
     dbDetails = new Object();
 	
-var mongoURL = "mongodb://motoadmin:Moto1234@ds217002.mlab.com:17002/motodb",
- mongoURLLabel = "mongodb://motoadmin:Moto1234@ds217002.mlab.com:17002/motodb";
+var mongoURL = "mongodb://meanadmin:Moto1234@ds235302.mlab.com:35302/meandb",
+ mongoURLLabel = "mongodb://meanadmin:Moto1234@ds235302.mlab.com:35302/meandb";
 
 var initDb = function(callback) {
   if (mongoURL == null) return;
