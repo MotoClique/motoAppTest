@@ -75,7 +75,7 @@ app.use('/api',route);
 
 // MongoDB Connection
 
-  var mongoURL = "mongodb://motoadmin:Moto1234@ds217002.mlab.com:17002/motodb";
+  var mongoURL = "mongodb://meanadmin:Moto1234@ds235302.mlab.com:35302/meandb";
 
   var mongodb = require('mongodb');
   
