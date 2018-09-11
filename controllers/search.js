@@ -14,6 +14,7 @@ const Filter = mongoose.model('Filter');
 const Loc = mongoose.model('Loc');
 const Parameter = mongoose.model('Parameter');
 const UserSubMap = mongoose.model('UserSubMap');
+const Fav = mongoose.model('Fav');
 //const BidBy = mongoose.model('BidBy');
 
 module.exports.search = function(req,res){//Fetch
@@ -1230,14 +1231,40 @@ module.exports.fetchBuy = function(req,query,results,callback,context){//Fetch f
 			if(res_buy_count > skip_rec){
 				Buy.find(buy_query).sort({"index_count":-1}).skip(skip_rec).limit(limit_rec)
 				.exec(function(err, result) {
-						for(var i=0; i<result.length; i++){
+						//////////////////////
+						var loopCount = 0;
+						result.forEach(function(current,index,arr){
+							var fav_query = {
+								bid_sell_buy_id: {"$eq":current.buy_req_id},
+								user_id: {"$eq":req.payload.user_id},
+								deleted: {"$ne": true}
+							};
+							Fav.find(fav_query)
+							.exec(function(fav_err, fav_result) {							
+								var clone = JSON.parse(JSON.stringify(current));
+								clone.type = "Buy";
+								if(fav_result && fav_result.length > 0){
+									clone.fav = true;		
+									clone.fav_id = fav_result[0]._id;		
+								}
+								results.push(clone);
+								loopCount = loopCount - (-1);
+								if(loopCount === result.length){
+									var buy_params = {count:count_buy, skip:skip_rec-(-result.length), limit:limit_rec};
+									context.excess_limit.buy = limit_rec - result.length;
+									callback(true,results,buy_params,null);
+								}
+							});
+						});	
+					
+						/*for(var i=0; i<result.length; i++){
 							var clone = JSON.parse(JSON.stringify(result[i]));
 							clone.type = "Buy";
 							results.push(clone);
 						}
 						var buy_params = {count:count_buy, skip:skip_rec-(-result.length), limit:limit_rec};
 						context.excess_limit.buy = limit_rec - result.length;
-						callback(true,results,buy_params,null);
+						callback(true,results,buy_params,null);*/
 				});
 			}
 			else{
@@ -1286,7 +1313,62 @@ module.exports.fetchBid = function(req,query,results,callback,context){//Fetch f
 			if(res_bid_count > skip_rec){
 				Bid.find(bid_query).sort({"index_count":-1}).skip(skip_rec).limit(limit_rec)
 				.exec(function(err, result) {
-					for(var i=0; i<result.length; i++){
+					//////////////////////
+					var loopCount = 0;
+					result.forEach(function(current,index,arr){
+						var fav_query = {
+							bid_sell_buy_id: {"$eq":current.bid_id},
+							user_id: {"$eq":req.payload.user_id},
+							deleted: {"$ne": true}
+						};
+						Fav.find(fav_query)
+							.exec(function(fav_err, fav_result) {								
+								var clone = JSON.parse(JSON.stringify(current));
+								clone.type = "Bid";
+								if(fav_result && fav_result.length > 0){
+									clone.fav = true;		
+									clone.fav_id = fav_result[0]._id;		
+								}
+								
+								var validTo = new Date();
+								if(current.bid_valid_to){
+									validTo = current.bid_valid_to;
+								}
+
+								if(validTo >= (new Date())){									
+									var bid_valid_to = current.bid_valid_to;
+									if(context.params.to_ist)
+										bid_valid_to = ctrlCommon.convertDateTime(current.bid_valid_to,context.params.to_ist);
+									var hrs = (bid_valid_to.getHours()<10)?("0"+bid_valid_to.getHours()):bid_valid_to.getHours();
+									var mins = (bid_valid_to.getMinutes()<10)?("0"+bid_valid_to.getMinutes()):bid_valid_to.getMinutes();
+									var secs = (bid_valid_to.getSeconds()<10)?("0"+bid_valid_to.getSeconds()):bid_valid_to.getSeconds();
+									clone.bid_valid_to = bid_valid_to.getDate()+'/'+(bid_valid_to.getMonth() - (-1))+'/'+bid_valid_to.getFullYear()+'T'+hrs+':'+mins+':'+secs;
+									results.push(clone);
+								}
+								else{
+									if(current.current_bid_at){											
+										var bid_valid_to = current.bid_valid_to;
+										if(context.params.to_ist)
+											bid_valid_to = ctrlCommon.convertDateTime(current.bid_valid_to,context.params.to_ist);
+										var hrs = (bid_valid_to.getHours()<10)?("0"+bid_valid_to.getHours()):bid_valid_to.getHours();
+										var mins = (bid_valid_to.getMinutes()<10)?("0"+bid_valid_to.getMinutes()):bid_valid_to.getMinutes();
+										var secs = (bid_valid_to.getSeconds()<10)?("0"+bid_valid_to.getSeconds()):bid_valid_to.getSeconds();
+										clone.bid_valid_to = bid_valid_to.getDate()+'/'+(bid_valid_to.getMonth() - (-1))+'/'+bid_valid_to.getFullYear()+'T'+hrs+':'+mins+':'+secs;
+										clone.sold = true;
+										results.push(clone);													
+									}
+								}
+								
+								loopCount = loopCount - (-1);
+								if(loopCount === result.length){
+									var bid_params = {count:count_bid, skip:skip_rec-(-result.length), limit:limit_rec};
+									context.excess_limit.bid = limit_rec - result.length;
+									callback(true,results,bid_params,null);
+								}
+						});
+					});
+					
+					/*for(var i=0; i<result.length; i++){
 						var validTo = new Date();
 						if(result[i].bid_valid_to){
 							validTo = result[i].bid_valid_to;
@@ -1323,7 +1405,7 @@ module.exports.fetchBid = function(req,query,results,callback,context){//Fetch f
 					
 					var bid_params = {count:count_bid, skip:skip_rec-(-result.length), limit:limit_rec};
 					context.excess_limit.bid = limit_rec - result.length;
-					callback(true,results,bid_params,null);
+					callback(true,results,bid_params,null);*/
 				});
 			}
 			else{
@@ -1362,14 +1444,40 @@ module.exports.fetchService = function(req,query,results,callback,context){//Fet
 			if(res_service_count > skip_rec){
 				Service.find(service_query).sort({"index_count":-1}).skip(skip_rec).limit(limit_rec)
 				.exec(function(err, result) {
-						for(var i=0; i<result.length; i++){
+						//////////////////////
+						var loopCount = 0;
+						result.forEach(function(current,index,arr){
+							var fav_query = {
+								bid_sell_buy_id: {"$eq":current.service_id},
+								user_id: {"$eq":req.payload.user_id},
+								deleted: {"$ne": true}
+							};
+							Fav.find(fav_query)
+							.exec(function(fav_err, fav_result) {							
+								var clone = JSON.parse(JSON.stringify(current));
+								clone.type = "Service";
+								if(fav_result && fav_result.length > 0){
+									clone.fav = true;		
+									clone.fav_id = fav_result[0]._id;		
+								}
+								results.push(clone);
+								loopCount = loopCount - (-1);
+								if(loopCount === result.length){
+									var service_params = {count:count_service, skip:skip_rec-(-result.length), limit:limit_rec};
+									context.excess_limit.service = limit_rec - result.length;
+									callback(true,results,service_params,null);
+								}
+							});
+						});
+					
+						/*for(var i=0; i<result.length; i++){
 							var clone = JSON.parse(JSON.stringify(result[i]));
 							clone.type = "Service";
 							results.push(clone);
 						}
 						var service_params = {count:count_service, skip:skip_rec-(-result.length), limit:limit_rec};
 						context.excess_limit.service = limit_rec - result.length;
-						callback(true,results,service_params,null);
+						callback(true,results,service_params,null);*/
 				});
 			}
 			else{
@@ -1409,14 +1517,40 @@ module.exports.fetchSell = function(req,query,results,callback,context){//Fetch 
 			if(res_sell_count > skip_rec){
 				Sell.find(sell_query).sort({"index_count":-1}).skip(skip_rec).limit(limit_rec)
 				.exec(function(err, result) {
-						for(var i=0; i<result.length; i++){
+						//////////////////////
+						var loopCount = 0;
+						result.forEach(function(current,index,arr){
+							var fav_query = {
+								bid_sell_buy_id: {"$eq":current.sell_id},
+								user_id: {"$eq":req.payload.user_id},
+								deleted: {"$ne": true}
+							};
+							Fav.find(fav_query)
+							.exec(function(fav_err, fav_result) {							
+								var clone = JSON.parse(JSON.stringify(current));
+								clone.type = "Sale";
+								if(fav_result && fav_result.length > 0){
+									clone.fav = true;		
+									clone.fav_id = fav_result[0]._id;		
+								}
+								results.push(clone);
+								loopCount = loopCount - (-1);
+								if(loopCount === result.length){
+									var sell_params = {count:count_sale, skip:skip_rec-(-result.length), limit:limit_rec};
+									context.excess_limit.sale = limit_rec - result.length;
+									callback(true,results,sell_params,null);
+								}
+							});
+						});	
+					
+						/*for(var i=0; i<result.length; i++){
 							var clone = JSON.parse(JSON.stringify(result[i]));
 							clone.type = "Sale";
 							results.push(clone);
 						}
 						var sell_params = {count:count_sale, skip:skip_rec-(-result.length), limit:limit_rec};
 						context.excess_limit.sale = limit_rec - result.length;
-						callback(true,results,sell_params,null);
+						callback(true,results,sell_params,null);*/
 				});
 			}
 			else{
