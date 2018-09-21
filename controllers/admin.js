@@ -2141,6 +2141,31 @@ module.exports.getUnqLocation = function(req,res){//Fetch
 	});
 };
 
+module.exports.addMultipleLocation = function(req,res){//Add Multiple Location
+	var locations = [];
+	var d = new Date();
+	var at = d.getDate() +"/"+ (d.getMonth() - (-1)) +"/"+ d.getFullYear() ;
+	var docs = req.body.docs;
+	docs.forEach(function(currentItem, index, arr){
+		var newLoc = JSON.parse(JSON.stringify(currentItem));
+		newLoc.createdBy = req.payload.user_id,
+		newLoc.createdAt = at,
+		newLoc.changedBy = req.payload.user_id,
+		newLoc.changedAt = at;
+		newLoc.deleted = false;
+		locations.push(newLoc);
+	});
+		
+	Loc.insertMany(locations, function(err, results) {
+		if(err){
+			res.json({statusCode: 'F', msg: 'Failed to add', error: err});
+		}
+		else{
+			res.json({statusCode: 'S', msg: 'Entries added', results: results});
+		}
+	});
+};
+
 
 
 
