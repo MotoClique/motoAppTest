@@ -1,3 +1,6 @@
+//Switch flag for Production DB / Testing DB
+var prodEnvFlag = false;
+
 //  Moto Clique Node application
 //importing modules
 
@@ -103,8 +106,11 @@ if (mongoURL == null && process.env.DATABASE_SERVICE_NAME) {
 var db = null,
     dbDetails = new Object();
 	
-var mongoURL = "mongodb://meanadmin:Moto1234@ds235302.mlab.com:35302/meandb",
- mongoURLLabel = "mongodb://meanadmin:Moto1234@ds235302.mlab.com:35302/meandb";
+var prdDBUrl = "mongodb://motoadmin:Moto1234@ds217002.mlab.com:17002/motodb";
+var testDBUrl = "mongodb://meanadmin:Moto1234@ds235302.mlab.com:35302/meandb";
+var mongoURL = (prodEnvFlag)?prdDBUrl:testDBUrl ,
+ mongoURLLabel = (prodEnvFlag)?prdDBUrl:testDBUrl;
+
 
 var initDb = function(callback) {
   if (mongoURL == null) return;
