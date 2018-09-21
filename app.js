@@ -1,3 +1,6 @@
+//Switch flag for Production DB / Testing DB
+var prodEnvFlag = false;
+
 //  Moto Clique Node application
 //importing modules
 
@@ -74,9 +77,10 @@ app.use('/api',route);
 
 
 // MongoDB Connection
-
-  var mongoURL = "mongodb://meanadmin:Moto1234@ds235302.mlab.com:35302/meandb";
-
+  var prdDBUrl = "mongodb://motoadmin:Moto1234@ds217002.mlab.com:17002/motodb";
+  var testDBUrl = "mongodb://meanadmin:Moto1234@ds235302.mlab.com:35302/meandb";
+  var mongoURL = (prodEnvFlag)?prdDBUrl:testDBUrl;
+  
   var mongodb = require('mongodb');
   
   mongoose.connect(mongoURL).then(
