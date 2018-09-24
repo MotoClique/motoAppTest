@@ -2156,11 +2156,11 @@ module.exports.addMultipleLocation = function(req,res){//Add Multiple Location
 		records[i].deleted = false;
 		
 		var query = {
-			country: records[i].country, 
-			state: records[i].state, 
-			city: records[i].city,
-			location: records[i].location,
-			deleted: false
+			country: {"$eq":records[i].country}, 
+			state: {"$eq":records[i].state}, 
+			city: {"$eq":records[i].city},
+			location: {"$eq":records[i].location},
+			deleted: {"$ne":true}
 		};
 		Loc.findOneAndUpdate(query, {$set:records[i]},{new:true, upsert:true},(loc_err, loc_res)=>{
 			//console.log(loc_err);
