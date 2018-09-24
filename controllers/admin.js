@@ -2142,28 +2142,41 @@ module.exports.getUnqLocation = function(req,res){//Fetch
 };
 
 module.exports.addMultipleLocation = function(req,res){//Add Multiple Location
-	var locations = [];
+	var count = 0;
+	var records = req.body.docs;
+	var results = [];
 	var d = new Date();
 	var at = d.getDate() +"/"+ (d.getMonth() - (-1)) +"/"+ d.getFullYear() ;
-	var docs = req.body.docs;
-	docs.forEach(function(currentItem, index, arr){
-		var newLoc = JSON.parse(JSON.stringify(currentItem));
-		newLoc.createdBy = req.payload.user_id,
-		newLoc.createdAt = at,
-		newLoc.changedBy = req.payload.user_id,
-		newLoc.changedAt = at;
-		newLoc.deleted = false;
-		locations.push(newLoc);
-	});
+	//console.log(records);
+	for(var i = 0; i<records.length; i++){		
+		records[i].createdBy = req.payload.user_id,
+		records[i].createdAt = at,
+		records[i].changedBy = req.payload.user_id,
+		records[i].changedAt = at;
+		records[i].deleted = false;
 		
-	Loc.insertMany(locations, function(err, results) {
-		if(err){
-			res.json({statusCode: 'F', msg: 'Failed to add', error: err});
-		}
-		else{
-			res.json({statusCode: 'S', msg: 'Entries added', results: results});
-		}
-	});
+		var query = {
+			country: records[i].country, 
+			state: records[i].state, 
+			city: records[i].city,
+			location: records[i].location,
+			deleted: false
+		};
+		Loc.findOneAndUpdate(query, {$set:records[i]},{new:true, upsert:true},(loc_err, loc_res)=>{
+			//console.log(loc_err);
+			//console.log(loc_res);
+			if(!loc_err && loc_res._id){
+				results.push(loc_res);
+			}
+			count = count - (-1);
+			//console.log(count);
+			if(count === records.length){
+				//console.log(records.length);
+				res.json({statusCode: 'S', msg: 'Entries added', error: loc_err, results: results});
+			}
+			
+		});
+	}
 };
 
 
