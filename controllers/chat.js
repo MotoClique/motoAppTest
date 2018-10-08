@@ -7,7 +7,7 @@ const Service = mongoose.model('Service');
 const Thumbnail = mongoose.model('Thumbnail');
 
 //////////////////////////Chat Inbox////////////////////////////////
-Const ChatInbox = mongoose.model('ChatInbox');
+const ChatInbox = mongoose.model('ChatInbox');
 
 module.exports.getChatInbox = function(req,res){//Fetch
 	var query = {
@@ -240,8 +240,8 @@ module.exports.updateChatInbox = function(req,res){//Update
     var updateDoc = JSON.parse(JSON.stringify(req.body.doc));
     var d = new Date();
 		//var at = d.getDate() +"/"+ (d.getMonth() - (-1)) +"/"+ d.getFullYear() ;
-		updateDoc.changedBy: req.payload.user_id,
-		updateDoc.changedAt: d
+		updateDoc.changedBy = req.payload.user_id;
+		updateDoc.changedAt = d;
 	
 		ChatInbox.update({_id: updateDoc._id}, {"$set": updateDoc}, {multi: true}, (update_err, update_res)=>{
 				if(update_err){
@@ -257,7 +257,7 @@ module.exports.updateChatInbox = function(req,res){//Update
 
 
 //////////////////////////Chat Details////////////////////////////////
-Const ChatDetail = mongoose.model('ChatDetail');
+const ChatDetail = mongoose.model('ChatDetail');
 
 module.exports.getChatDetail = function(req,res){//Fetch Chat Details
 	var query = {
