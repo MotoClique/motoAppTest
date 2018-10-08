@@ -199,7 +199,7 @@ module.exports.getServiceForChat = function(req,callback){//Get the service deta
 	});
 };
 
-module.exports.addChatInbox = function(req,res){//Add New Chat Inbox
+module.exports.addChatInbox = function(req,callback){//Add New Chat Inbox
 	var chat_id = "0";
 	Counter.getNextSequenceValue('chat',function(sequence){
 		if(sequence){
@@ -207,32 +207,32 @@ module.exports.addChatInbox = function(req,res){//Add New Chat Inbox
 			var d = new Date();
 			//var at = d.getDate() +"/"+ (d.getMonth() - (-1)) +"/"+ d.getFullYear() ;
 			let newChatInbox = new ChatInbox({
-        index_count: index_count,
+       	 			index_count: index_count,
 				chat_id: chat_id - (-index_count),
-        from_user: req.payload.user_id,
-        to_user: req.body.to_user,
-        post_id: req.body.post_id,
-        post_type: req.body.post_type,
+       	 			from_user: req.payload.user_id,
+        			to_user: req.body.to_user,
+        			post_id: req.body.post_id,
+        			post_type: req.body.post_type,
 				post_deletion: false,
-        from_deleted: false,
-        to_deleted: false,
+        			from_deleted: false,
+        			to_deleted: false,
 				createdBy: req.payload.user_id,
 				createdAt: d,
 				changedBy: req.payload.user_id,
 				changedAt: d
 			});
-      newChatInbox.save((err, chatInbox)=>{
-							if(err){
-								res.json({statusCode: 'F', msg: 'Failed to add', error: err});
-							}
-							else{
-								res.json({statusCode: 'S', msg: 'Entry added', results: chatInbox});
-							}
+      			newChatInbox.save((err, chatInbox)=>{
+				if(err){
+					callback(null);
+				}
+				else{
+					callback(chatInbox);
+				}
 			});
-     }
-     else{
-			res.json({statusCode: 'F', msg: 'Unable to generate sequence number.'});
-		 }
+    		}
+     		else{
+			callback(null); //res.json({statusCode: 'F', msg: 'Unable to generate sequence number.'});
+		}
   });
 };
 
@@ -284,30 +284,37 @@ module.exports.getChatDetail = function(req,res){//Fetch Chat Details
 };
 
 module.exports.addChatDetail = function(req,res){//Add New Chat Detail
-		var d = new Date();
-		//var at = d.getDate() +"/"+ (d.getMonth() - (-1)) +"/"+ d.getFullYear() ;
-		let newChatDetail = new ChatDetail({
-				user_id: req.payload.user_id,
-				chat_id: req.body.chat_id,
-        post_id: req.body.post_id,
-        text: req.body.text,
-        read: false,
-        post_deletion: false,
-				deleted: false,
-				createdBy: req.payload.user_id,
-				createdAt: d,
-				changedBy: req.payload.user_id,
-				changedAt: d
-		});
-			
-    newChatDetail.save((err, res)=>{
-				if(err){
-						res.json({statusCode: 'F', msg: 'Failed to add', error: err});
-				}
-				else{
-						res.json({statusCode: 'S', msg: 'Entry added', results: res});
-				}
-		});
+	module.exports.addChatInbox(req,function(data){
+		if(data){
+			var d = new Date();
+			//var at = d.getDate() +"/"+ (d.getMonth() - (-1)) +"/"+ d.getFullYear() ;
+			let newChatDetail = new ChatDetail({
+					user_id: req.payload.user_id,
+					chat_id: data.chat_id,
+					post_id: req.body.post_id,
+					text: req.body.text,
+					read: false,
+					post_deletion: false,
+					deleted: false,
+					createdBy: req.payload.user_id,
+					createdAt: d,
+					changedBy: req.payload.user_id,
+					changedAt: d
+			});
+
+			newChatDetail.save((err, res)=>{
+					if(err){
+						res.json({statusCode: 'F', msg: 'Failed to send', error: err});
+					}
+					else{
+						res.json({statusCode: 'S', msg: 'Sent Successfully.', results: res});
+					}
+			});
+		}
+		else{
+			res.json({statusCode: 'F', msg: 'Failed to send', error: null});    
+		}
+	});
 };
 
 
