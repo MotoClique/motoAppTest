@@ -86,6 +86,13 @@ module.exports.getChatInbox = function(req,res){//Fetch
 					}
 				});
 			}
+			else{
+				myInboxs.push(chat);
+				loopCount = loopCount - (-1);
+				if(loopCount === chatInboxs.length){
+				   res.json({statusCode:"S", results: myInboxs, error: null});
+				}
+			}
 		});
 		  
 	    }
