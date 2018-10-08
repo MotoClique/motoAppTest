@@ -1,18 +1,23 @@
 var mongoose = require('mongoose');
 var Counter = mongoose.model('Counter');
+const Sell = mongoose.model('Sell');
+const Buy = mongoose.model('Buy');
+const Bid = mongoose.model('Bid');
+const Service = mongoose.model('Service');
+const Thumbnail = mongoose.model('Thumbnail');
 
 //////////////////////////Chat Inbox////////////////////////////////
 Const ChatInbox = mongoose.model('ChatInbox');
 
 module.exports.getChatInbox = function(req,res){//Fetch
 	var query = {
-    from_deleted: {"$ne": true},
-    to_deleted: {"$ne": true}
-  };
+	    from_deleted: {"$ne": true},
+	    to_deleted: {"$ne": true}
+	  };
 	if(req.query.from_user){
 		query.from_user = {"$eq":req.query.from_user};
 	}
-  if(req.query.to_user){
+ 	if(req.query.to_user){
 		query.to_user = {"$eq":req.query.to_user};
 	}
 	if(req.query.chat_id){
@@ -21,16 +26,176 @@ module.exports.getChatInbox = function(req,res){//Fetch
 	if(req.query.from_deleted){
 		query.from_deleted = {"$eq":req.query.from_deleted};
 	}
-  if(req.query.to_deleted){
+ 	if(req.query.to_deleted){
 		query.to_deleted = {"$eq":req.query.to_deleted};
 	}
 	ChatInbox.find(query,function(err, chatInboxs){
-    if(err){
-      res.json({statusCode:"F", results: [], error: err});
-    }
-    else{
-		  res.json({statusCode:"S", results: chatInboxs, error: null});
-    }
+	    if(err){
+	      res.json({statusCode:"F", results: [], error: err});
+	    }
+	    else if(chatInboxs.length>0){
+		var myInboxs = [];
+		var loopCount = 0;
+		chatInboxs.forEach(function(item,index,arr){
+			var chat =  JSON.parse(JSON.stringify(item));			
+			if(chat.post_type === 'Sale'){
+				module.exports.getSellForChat(chat,function(data){
+					if(data){
+					   var obj = Object.assign({}, chat, data);
+					   myInboxs.push(obj);
+					}
+					loopCount = loopCount - (-1);
+					if(loopCount === chatInboxs.length){
+					   res.json({statusCode:"S", results: myInboxs, error: null});
+					}
+				});
+			}
+			else if(chat.post_type === 'Buy'){
+				module.exports.getBuyForChat(chat,function(data){
+					if(data){
+					   var obj = Object.assign({}, chat, data);
+					   myInboxs.push(obj);
+					}
+					loopCount = loopCount - (-1);
+					if(loopCount === chatInboxs.length){
+					   res.json({statusCode:"S", results: myInboxs, error: null});
+					}
+				});
+			}
+			else if(chat.post_type === 'Bid'){
+				module.exports.getBidForChat(chat,function(data){
+					if(data){
+					   var obj = Object.assign({}, chat, data);
+					   myInboxs.push(obj);
+					}
+					loopCount = loopCount - (-1);
+					if(loopCount === chatInboxs.length){
+					   res.json({statusCode:"S", results: myInboxs, error: null});
+					}
+				});
+			}
+			else if(chat.post_type === 'Service'){
+				module.exports.getServiceForChat(chat,function(data){
+					if(data){
+					   var obj = Object.assign({}, chat, data);
+					   myInboxs.push(obj);
+					}
+					loopCount = loopCount - (-1);
+					if(loopCount === chatInboxs.length){
+					   res.json({statusCode:"S", results: myInboxs, error: null});
+					}
+				});
+			}
+		});
+		  
+	    }
+	    else{
+	    	res.json({statusCode:"S", results: chatInboxs, error: null});
+	    }
+	});
+};
+
+module.exports.getSellForChat = function(req,callback){//Get the sell detail for the chat
+	Sell.find({sell_id:req.query.post_id},function(err, result){
+		if(err){
+			callback(null);
+		}
+		else if(result.length > 0){
+			Thumbnail.find({transaction_id:req.post_id},function(thumbnail_err, thumbnail){
+				var postDetail =  JSON.parse(JSON.stringify(result[0]));
+				if(!thumbnail_err && thumbnail.length>0){
+					postDetail.thumbnail = thumbnail[0];
+					for(var i = 0; i<thumbnail.length; i++){
+						if(thumbnail[i].default){
+							postDetail.thumbnail = thumbnail[i];
+							break;
+						}
+					}
+				}
+				callback(postDetail);
+			});			
+		}
+		else{
+			callback(null);
+		}
+	});
+};
+
+module.exports.getBuyForChat = function(req,callback){//Get the buy detail for the chat
+	Buy.find({buy_req_id:req.query.post_id},function(err, result){
+		if(err){
+			callback(null);
+		}
+		else if(result.length > 0){
+			Thumbnail.find({transaction_id:req.post_id},function(thumbnail_err, thumbnail){
+				var postDetail =  JSON.parse(JSON.stringify(result[0]));
+				if(!thumbnail_err && thumbnail.length>0){
+					postDetail.thumbnail = thumbnail[0];
+					for(var i = 0; i<thumbnail.length; i++){
+						if(thumbnail[i].default){
+							postDetail.thumbnail = thumbnail[i];
+							break;
+						}
+					}
+				}
+				callback(postDetail);
+			});			
+		}
+		else{
+			callback(null);
+		}
+	});
+};
+
+module.exports.getBidForChat = function(req,callback){//Get the bid detail for the chat
+	Bid.find({bid_id:req.query.post_id},function(err, result){
+		if(err){
+			callback(null);
+		}
+		else if(result.length > 0){
+			Thumbnail.find({transaction_id:req.post_id},function(thumbnail_err, thumbnail){
+				var postDetail =  JSON.parse(JSON.stringify(result[0]));
+				if(!thumbnail_err && thumbnail.length>0){
+					postDetail.thumbnail = thumbnail[0];
+					for(var i = 0; i<thumbnail.length; i++){
+						if(thumbnail[i].default){
+							postDetail.thumbnail = thumbnail[i];
+							break;
+						}
+					}
+				}
+				callback(postDetail);
+			});			
+		}
+		else{
+			callback(null);
+		}
+	});
+};
+
+module.exports.getServiceForChat = function(req,callback){//Get the service detail for the chat
+	Service.find({service_id:req.query.post_id},function(err, result){
+		if(err){
+			callback(null);
+		}
+		else if(result.length > 0){
+			Thumbnail.find({transaction_id:req.post_id},function(thumbnail_err, thumbnail){
+				var postDetail =  JSON.parse(JSON.stringify(result[0]));
+				if(!thumbnail_err && thumbnail.length>0){
+					postDetail.thumbnail = thumbnail[0];
+					for(var i = 0; i<thumbnail.length; i++){
+						if(thumbnail[i].default){
+							postDetail.thumbnail = thumbnail[i];
+							break;
+						}
+					}
+				}
+				callback(postDetail);
+			});			
+		}
+		else{
+			callback(null);
+		}
 	});
 };
 
