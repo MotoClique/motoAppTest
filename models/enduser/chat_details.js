@@ -8,13 +8,19 @@ var ChatDetailSchema = new mongoose.Schema({
 	post_id:{
 		type: String 
 	},
-	user_id:{
+	from_user:{
+		type: String 
+	},
+	to_user:{
 		type: String 
 	},
 	text:{
 		type: String 
 	},
-  read:{
+  	from_read:{
+		type: Boolean 
+	},
+	to_read:{
 		type: Boolean 
 	},
 	post_deletion:{
