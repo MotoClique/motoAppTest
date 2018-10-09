@@ -10,25 +10,32 @@ const Thumbnail = mongoose.model('Thumbnail');
 const ChatInbox = mongoose.model('ChatInbox');
 
 module.exports.getChatInbox = function(req,res){//Fetch
-	var query = {
-	    from_deleted: {"$ne": true},
-	    to_deleted: {"$ne": true}
-	};
-	if(req.query.from_user){
-		query.from_user = {"$eq":req.query.from_user};
-	}
- 	if(req.query.to_user){
-		query.to_user = {"$eq":req.query.to_user};
-	}
+	var query = {};
+	var and_query = [
+		{from_deleted: {"$ne": true}},
+		{to_deleted: {"$ne": true}}
+	];	
 	if(req.query.chat_id){
-		query.chat_id = {"$eq":req.query.chat_id};
+		and_query.push({chat_id: {"$eq":req.query.chat_id}});
 	}
 	if(req.query.from_deleted){
-		query.from_deleted = {"$eq":req.query.from_deleted};
+		and_query.push({from_deleted: {"$eq":req.query.from_deleted}});
 	}
  	if(req.query.to_deleted){
-		query.to_deleted = {"$eq":req.query.to_deleted};
+		and_query.push({to_deleted: {"$eq":req.query.to_deleted}});
 	}
+	
+	var or_query = [];
+	if(req.query.from_user){
+		or_query.push({from_user: {"$eq":req.query.from_user}});
+	}
+ 	if(req.query.to_user){
+		or_query.push({to_user: {"$eq":req.query.to_user}});
+	}
+	
+	query['$and'] = and_query;
+	if(or_query.length>0)
+	   query['$or'] = or_query;
 	ChatInbox.find(query,function(err, chatInboxs){
 	    if(err){
 	      res.json({statusCode:"F", results: [], error: err});
