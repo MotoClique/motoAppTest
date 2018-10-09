@@ -270,6 +270,8 @@ module.exports.addChatInbox = function(req,callback){//Add New Chat Inbox
 				chat_id: chat_id - (-index_count),
        	 			from_user: req.payload.user_id,
         			to_user: req.body.to_user,
+				from_user_name: req.body.from_user_name,
+        			to_user_name: req.body.to_user_name,
         			post_id: req.body.post_id,
         			post_type: req.body.post_type,
 				post_deletion: false,
@@ -302,6 +304,8 @@ module.exports.updateChatInbox = function(req,callback){//Update chat inbox
     	var d = new Date();
 	delete updateDoc.from_user;
 	delete updateDoc.to_user;
+	delete updateDoc.from_user_name;
+	delete updateDoc.to_user_name;
 	//var at = d.getDate() +"/"+ (d.getMonth() - (-1)) +"/"+ d.getFullYear() ;
 	updateDoc.changedBy = req.payload.user_id;
 	updateDoc.changedAt = d;
@@ -362,6 +366,8 @@ module.exports.addChatDetail = function(req,res){//Add New Chat Detail
 			let newChatDetail = new ChatDetail({
 					from_user: req.payload.user_id,
 					to_user: req.body.to_user,
+					from_user_name: req.body.from_user_name,
+        				to_user_name: req.body.to_user_name,
 					chat_id: req.body.chat_id,
 					post_id: req.body.post_id,
 					text: req.body.text,
@@ -397,6 +403,8 @@ module.exports.addChatDetail = function(req,res){//Add New Chat Detail
 			let newChatDetail = new ChatDetail({
 					from_user: req.payload.user_id,
 					to_user: req.body.to_user,
+					from_user_name: req.body.from_user_name,
+        				to_user_name: req.body.to_user_name,
 					chat_id: data.chat_id,
 					post_id: req.body.post_id,
 					text: req.body.text,
