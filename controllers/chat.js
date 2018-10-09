@@ -48,7 +48,7 @@ module.exports.getChatInbox = function(req,res){//Fetch
 					}
 					loopCount = loopCount - (-1);
 					if(loopCount === chatInboxs.length){
-						myInboxs.sort((a: any, b: any)=> {
+						myInboxs.sort(function(a, b){
 							if (a.changedAt < b.changedAt)
 								return 1;
 							else if ( a.changedAt > b.changedAt)
@@ -67,7 +67,7 @@ module.exports.getChatInbox = function(req,res){//Fetch
 					}
 					loopCount = loopCount - (-1);
 					if(loopCount === chatInboxs.length){
-						myInboxs.sort((a: any, b: any)=> {
+						myInboxs.sort(function(a, b){
 							if (a.changedAt < b.changedAt)
 								return 1;
 							else if ( a.changedAt > b.changedAt)
@@ -86,7 +86,7 @@ module.exports.getChatInbox = function(req,res){//Fetch
 					}
 					loopCount = loopCount - (-1);
 					if(loopCount === chatInboxs.length){
-						myInboxs.sort((a: any, b: any)=> {
+						myInboxs.sort(function(a, b){
 							if (a.changedAt < b.changedAt)
 								return 1;
 							else if ( a.changedAt > b.changedAt)
@@ -105,7 +105,7 @@ module.exports.getChatInbox = function(req,res){//Fetch
 					}
 					loopCount = loopCount - (-1);
 					if(loopCount === chatInboxs.length){
-						myInboxs.sort((a: any, b: any)=> {
+						myInboxs.sort(function(a, b){
 							if (a.changedAt < b.changedAt)
 								return 1;
 							else if ( a.changedAt > b.changedAt)
@@ -120,14 +120,14 @@ module.exports.getChatInbox = function(req,res){//Fetch
 				myInboxs.push(chat);
 				loopCount = loopCount - (-1);
 				if(loopCount === chatInboxs.length){
-					myInboxs.sort((a: any, b: any)=> {
-						if (a.changedAt < b.changedAt)
-							return 1;
-						else if ( a.changedAt > b.changedAt)
-							return -1;
-						return 0;
-					});//descending sort
-					res.json({statusCode:"S", results: myInboxs, error: null});
+						myInboxs.sort(function(a, b){
+							if (a.changedAt < b.changedAt)
+								return 1;
+							else if ( a.changedAt > b.changedAt)
+								return -1;
+							return 0;
+						});//descending sort
+						res.json({statusCode:"S", results: myInboxs, error: null});
 				}
 			}
 		});
@@ -334,7 +334,7 @@ module.exports.getChatDetail = function(req,res){//Fetch Chat Details
 	    	res.json({statusCode:"F", results: [], error: err});
 	    }
 	    else{
-		chatDetails.sort((a: any, b: any)=> {
+		chatDetails.sort(function(a, b){
 			if (a.changedAt < b.changedAt)
 				return 1;
 			else if ( a.changedAt > b.changedAt)
