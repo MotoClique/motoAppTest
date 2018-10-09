@@ -14,6 +14,12 @@ var ChatDetailSchema = new mongoose.Schema({
 	to_user:{
 		type: String 
 	},
+	from_user_name:{
+		type: String 
+	},
+	to_user_name:{
+		type: String 
+	},
 	text:{
 		type: String 
 	},
