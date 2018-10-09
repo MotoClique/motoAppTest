@@ -13,7 +13,7 @@ module.exports.getChatInbox = function(req,res){//Fetch
 	var query = {
 	    from_deleted: {"$ne": true},
 	    to_deleted: {"$ne": true}
-	  };
+	};
 	if(req.query.from_user){
 		query.from_user = {"$eq":req.query.from_user};
 	}
@@ -37,7 +37,9 @@ module.exports.getChatInbox = function(req,res){//Fetch
 		var myInboxs = [];
 		var loopCount = 0;
 		chatInboxs.forEach(function(item,index,arr){
-			var chat =  JSON.parse(JSON.stringify(item));			
+			var chat =  JSON.parse(JSON.stringify(item));
+			chat.createdAt = item.createdAt;
+			chat.changedAt = item.changedAt;
 			if(chat.post_type === 'Sale'){
 				module.exports.getSellForChat(chat,function(data){
 					if(data){
@@ -46,7 +48,14 @@ module.exports.getChatInbox = function(req,res){//Fetch
 					}
 					loopCount = loopCount - (-1);
 					if(loopCount === chatInboxs.length){
-					   res.json({statusCode:"S", results: myInboxs, error: null});
+						myInboxs.sort((a: any, b: any)=> {
+							if (a.changedAt < b.changedAt)
+								return 1;
+							else if ( a.changedAt > b.changedAt)
+								return -1;
+							return 0;
+						});//descending sort
+						res.json({statusCode:"S", results: myInboxs, error: null});
 					}
 				});
 			}
@@ -58,7 +67,14 @@ module.exports.getChatInbox = function(req,res){//Fetch
 					}
 					loopCount = loopCount - (-1);
 					if(loopCount === chatInboxs.length){
-					   res.json({statusCode:"S", results: myInboxs, error: null});
+						myInboxs.sort((a: any, b: any)=> {
+							if (a.changedAt < b.changedAt)
+								return 1;
+							else if ( a.changedAt > b.changedAt)
+								return -1;
+							return 0;
+						});//descending sort
+						res.json({statusCode:"S", results: myInboxs, error: null});
 					}
 				});
 			}
@@ -70,7 +86,14 @@ module.exports.getChatInbox = function(req,res){//Fetch
 					}
 					loopCount = loopCount - (-1);
 					if(loopCount === chatInboxs.length){
-					   res.json({statusCode:"S", results: myInboxs, error: null});
+						myInboxs.sort((a: any, b: any)=> {
+							if (a.changedAt < b.changedAt)
+								return 1;
+							else if ( a.changedAt > b.changedAt)
+								return -1;
+							return 0;
+						});//descending sort
+						res.json({statusCode:"S", results: myInboxs, error: null});
 					}
 				});
 			}
@@ -82,7 +105,14 @@ module.exports.getChatInbox = function(req,res){//Fetch
 					}
 					loopCount = loopCount - (-1);
 					if(loopCount === chatInboxs.length){
-					   res.json({statusCode:"S", results: myInboxs, error: null});
+						myInboxs.sort((a: any, b: any)=> {
+							if (a.changedAt < b.changedAt)
+								return 1;
+							else if ( a.changedAt > b.changedAt)
+								return -1;
+							return 0;
+						});//descending sort
+						res.json({statusCode:"S", results: myInboxs, error: null});
 					}
 				});
 			}
@@ -90,7 +120,14 @@ module.exports.getChatInbox = function(req,res){//Fetch
 				myInboxs.push(chat);
 				loopCount = loopCount - (-1);
 				if(loopCount === chatInboxs.length){
-				   res.json({statusCode:"S", results: myInboxs, error: null});
+					myInboxs.sort((a: any, b: any)=> {
+						if (a.changedAt < b.changedAt)
+							return 1;
+						else if ( a.changedAt > b.changedAt)
+							return -1;
+						return 0;
+					});//descending sort
+					res.json({statusCode:"S", results: myInboxs, error: null});
 				}
 			}
 		});
@@ -119,6 +156,8 @@ module.exports.getSellForChat = function(req,callback){//Get the sell detail for
 						}
 					}
 				}
+				delete postDetail.createdAt;
+				delete postDetail.changedAt;
 				callback(postDetail);
 			});			
 		}
@@ -145,6 +184,8 @@ module.exports.getBuyForChat = function(req,callback){//Get the buy detail for t
 						}
 					}
 				}
+				delete postDetail.createdAt;
+				delete postDetail.changedAt;
 				callback(postDetail);
 			});			
 		}
@@ -171,6 +212,8 @@ module.exports.getBidForChat = function(req,callback){//Get the bid detail for t
 						}
 					}
 				}
+				delete postDetail.createdAt;
+				delete postDetail.changedAt;
 				callback(postDetail);
 			});			
 		}
@@ -197,6 +240,8 @@ module.exports.getServiceForChat = function(req,callback){//Get the service deta
 						}
 					}
 				}
+				delete postDetail.createdAt;
+				delete postDetail.changedAt;
 				callback(postDetail);
 			});			
 		}
@@ -223,17 +268,19 @@ module.exports.addChatInbox = function(req,callback){//Add New Chat Inbox
 				post_deletion: false,
         			from_deleted: false,
         			to_deleted: false,
+				from_read: true,
+        			to_read: false,
 				createdBy: req.payload.user_id,
 				createdAt: d,
 				changedBy: req.payload.user_id,
 				changedAt: d
 			});
-      			newChatInbox.save((err, chatInbox)=>{
-				if(err){
+      			newChatInbox.save((chatInbox_err, chatInbox_res)=>{
+				if(chatInbox_err){
 					callback(null);
 				}
 				else{
-					callback(chatInbox);
+					callback(chatInbox_res);
 				}
 			});
     		}
@@ -243,21 +290,23 @@ module.exports.addChatInbox = function(req,callback){//Add New Chat Inbox
   });
 };
 
-module.exports.updateChatInbox = function(req,res){//Update
-    var updateDoc = JSON.parse(JSON.stringify(req.body.doc));
-    var d = new Date();
-		//var at = d.getDate() +"/"+ (d.getMonth() - (-1)) +"/"+ d.getFullYear() ;
-		updateDoc.changedBy = req.payload.user_id;
-		updateDoc.changedAt = d;
+module.exports.updateChatInbox = function(req,callback){//Update chat inbox
+	var updateDoc = JSON.parse(JSON.stringify(req.body));
+    	var d = new Date();
+	delete updateDoc.from_user;
+	delete updateDoc.to_user;
+	//var at = d.getDate() +"/"+ (d.getMonth() - (-1)) +"/"+ d.getFullYear() ;
+	updateDoc.changedBy = req.payload.user_id;
+	updateDoc.changedAt = d;
 	
-		ChatInbox.update({_id: updateDoc._id}, {"$set": updateDoc}, {multi: true}, (update_err, update_res)=>{
-				if(update_err){
-					res.json({statusCode: 'F', msg: 'Failed to update', error: update_err});
-				}
-				else{
-				  res.json({statusCode: 'S', msg: 'Entry updated', results: update_res});
-				}
-		});
+	ChatInbox.update({chat_id: updateDoc.chat_id}, {"$set": updateDoc}, {multi: true}, (update_err, update_res)=>{
+		if(update_err){
+			callback(null);//res.json({statusCode: 'F', msg: 'Failed to update', error: update_err});
+		}
+		else{
+			callback(update_res);//res.json({statusCode: 'S', msg: 'Entry updated', results: update_res});
+		}
+	});
 };
 
 
@@ -268,10 +317,10 @@ const ChatDetail = mongoose.model('ChatDetail');
 
 module.exports.getChatDetail = function(req,res){//Fetch Chat Details
 	var query = {
-    deleted: {"$ne": true}
-  };
-	if(req.query.user_id){
-		query.user_id = {"$eq":req.query.user_id};
+	    deleted: {"$ne": true}
+	};
+	if(req.query.from_user){
+		query.from_user = {"$eq":req.query.from_user};
 	}
 	if(req.query.chat_id){
 		query.chat_id = {"$eq":req.query.chat_id};
@@ -280,27 +329,37 @@ module.exports.getChatDetail = function(req,res){//Fetch Chat Details
 		query.deleted = {"$eq":req.query.deleted};
 	}
  
-	ChatDetail.find(query,function(err, ChatDetails){
-    if(err){
-      res.json({statusCode:"F", results: [], error: err});
-    }
-    else{
-		  res.json({statusCode:"S", results: ChatDetails, error: null});
-    }
+	ChatDetail.find(query,function(err, chatDetails){
+	    if(err){
+	    	res.json({statusCode:"F", results: [], error: err});
+	    }
+	    else{
+		chatDetails.sort((a: any, b: any)=> {
+			if (a.changedAt < b.changedAt)
+				return 1;
+			else if ( a.changedAt > b.changedAt)
+				return -1;
+			return 0;
+		});//descending sort
+		res.json({statusCode:"S", results: chatDetails, error: null});
+	    }
 	});
 };
 
 module.exports.addChatDetail = function(req,res){//Add New Chat Detail
-	module.exports.addChatInbox(req,function(data){
-		if(data){
+	if(req.body.chat_id){//Continue in same chat
+	   module.exports.updateChatInbox(req,function(data){
+		   if(data){
 			var d = new Date();
 			//var at = d.getDate() +"/"+ (d.getMonth() - (-1)) +"/"+ d.getFullYear() ;
 			let newChatDetail = new ChatDetail({
-					user_id: req.payload.user_id,
-					chat_id: data.chat_id,
+					from_user: req.payload.user_id,
+					to_user: req.body.to_user,
+					chat_id: req.body.chat_id,
 					post_id: req.body.post_id,
 					text: req.body.text,
-					read: false,
+					from_read: true,
+					to_read: false,
 					post_deletion: false,
 					deleted: false,
 					createdBy: req.payload.user_id,
@@ -309,12 +368,47 @@ module.exports.addChatDetail = function(req,res){//Add New Chat Detail
 					changedAt: d
 			});
 
-			newChatDetail.save((err, res)=>{
-					if(err){
-						res.json({statusCode: 'F', msg: 'Failed to send', error: err});
+			newChatDetail.save((chatdetail_err, chatdetail_res)=>{
+					if(chatdetail_err){
+						res.json({statusCode: 'F', msg: 'Failed to send', error: chatdetail_err});
 					}
 					else{
-						res.json({statusCode: 'S', msg: 'Sent Successfully.', results: res});
+						res.json({statusCode: 'S', msg: 'Sent Successfully.', results: chatdetail_res});
+					}
+			});
+		}
+		else{
+			res.json({statusCode: 'F', msg: 'Failed to send', error: null});    
+		}
+	   });
+	}
+	else{//Create new chat
+	  module.exports.addChatInbox(req,function(data){
+		if(data){
+			var d = new Date();
+			//var at = d.getDate() +"/"+ (d.getMonth() - (-1)) +"/"+ d.getFullYear() ;
+			let newChatDetail = new ChatDetail({
+					from_user: req.payload.user_id,
+					to_user: req.body.to_user,
+					chat_id: data.chat_id,
+					post_id: req.body.post_id,
+					text: req.body.text,
+					from_read: true,
+					to_read: false,
+					post_deletion: false,
+					deleted: false,
+					createdBy: req.payload.user_id,
+					createdAt: d,
+					changedBy: req.payload.user_id,
+					changedAt: d
+			});
+
+			newChatDetail.save((chatdetail_err, chatdetail_res)=>{
+					if(chatdetail_err){
+						res.json({statusCode: 'F', msg: 'Failed to send', error: chatdetail_err});
+					}
+					else{
+						res.json({statusCode: 'S', msg: 'Sent Successfully.', results: chatdetail_res});
 					}
 			});
 		}
@@ -322,6 +416,7 @@ module.exports.addChatDetail = function(req,res){//Add New Chat Detail
 			res.json({statusCode: 'F', msg: 'Failed to send', error: null});    
 		}
 	});
+	}
 };
 
 
