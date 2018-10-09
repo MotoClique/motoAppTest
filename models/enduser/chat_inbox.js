@@ -21,6 +21,12 @@ var ChatInboxSchema = new mongoose.Schema({
 	to_user:{
 		type: String 
 	},
+	from_user_name:{
+		type: String 
+	},
+	to_user_name:{
+		type: String 
+	},
 	post_deletion:{
 		type: Boolean 
 	},
