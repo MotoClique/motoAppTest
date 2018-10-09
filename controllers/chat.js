@@ -140,7 +140,7 @@ module.exports.getChatInbox = function(req,res){//Fetch
 };
 
 module.exports.getSellForChat = function(req,callback){//Get the sell detail for the chat
-	Sell.find({sell_id:req.query.post_id},function(err, result){
+	Sell.find({sell_id:req.post_id},function(err, result){
 		if(err){
 			callback(null);
 		}
@@ -168,7 +168,7 @@ module.exports.getSellForChat = function(req,callback){//Get the sell detail for
 };
 
 module.exports.getBuyForChat = function(req,callback){//Get the buy detail for the chat
-	Buy.find({buy_req_id:req.query.post_id},function(err, result){
+	Buy.find({buy_req_id:req.post_id},function(err, result){
 		if(err){
 			callback(null);
 		}
@@ -196,7 +196,7 @@ module.exports.getBuyForChat = function(req,callback){//Get the buy detail for t
 };
 
 module.exports.getBidForChat = function(req,callback){//Get the bid detail for the chat
-	Bid.find({bid_id:req.query.post_id},function(err, result){
+	Bid.find({bid_id:req.post_id},function(err, result){
 		if(err){
 			callback(null);
 		}
@@ -224,7 +224,7 @@ module.exports.getBidForChat = function(req,callback){//Get the bid detail for t
 };
 
 module.exports.getServiceForChat = function(req,callback){//Get the service detail for the chat
-	Service.find({service_id:req.query.post_id},function(err, result){
+	Service.find({service_id:req.post_id},function(err, result){
 		if(err){
 			callback(null);
 		}
