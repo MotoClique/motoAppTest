@@ -279,6 +279,8 @@ module.exports.addChatInbox = function(req,callback){//Add New Chat Inbox
         			to_deleted: false,
 				from_read: true,
         			to_read: false,
+				from_unread_count: 1,
+				to_unread_count: 1,
 				createdBy: req.payload.user_id,
 				createdAt: d,
 				changedBy: req.payload.user_id,
@@ -306,11 +308,17 @@ module.exports.updateChatInbox = function(req,callback){//Update chat inbox
 	delete updateDoc.to_user;
 	delete updateDoc.from_user_name;
 	delete updateDoc.to_user_name;
+	delete updateDoc.from_unread_count;
+	delete updateDoc.to_unread_count;
 	//var at = d.getDate() +"/"+ (d.getMonth() - (-1)) +"/"+ d.getFullYear() ;
 	updateDoc.changedBy = req.payload.user_id;
 	updateDoc.changedAt = d;
 	
-	ChatInbox.update({chat_id: updateDoc.chat_id}, {"$set": updateDoc}, {multi: true}, (update_err, update_res)=>{
+	var increment = {'from_unread_count': 1};
+	if(req.payload.user_id === req.body.from_user)
+	   increment = {'to_unread_count': 1};
+	
+	ChatInbox.update({chat_id: updateDoc.chat_id}, {"$set": updateDoc, "$inc": increment}, {multi: true}, (update_err, update_res)=>{
 		if(update_err){
 			callback(null);//res.json({statusCode: 'F', msg: 'Failed to update', error: update_err});
 		}
