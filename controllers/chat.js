@@ -347,11 +347,11 @@ module.exports.getChatDetail = function(req,res){//Fetch Chat Details
 	    else{
 		chatDetails.sort(function(a, b){
 			if (a.changedAt < b.changedAt)
-				return 1;
-			else if ( a.changedAt > b.changedAt)
 				return -1;
+			else if ( a.changedAt > b.changedAt)
+				return 1;
 			return 0;
-		});//descending sort
+		});//ascending sort
 		res.json({statusCode:"S", results: chatDetails, error: null});
 	    }
 	});
