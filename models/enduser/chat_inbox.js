@@ -42,6 +42,12 @@ var ChatInboxSchema = new mongoose.Schema({
   	to_read:{
 		type: Boolean 
 	},
+	from_unread_count:{
+		type: Number 
+	},
+	to_unread_count:{
+		type: Number 
+	},
 	createdBy:{
 		type: String 
 	},
