@@ -267,7 +267,7 @@ module.exports.addChatInbox = function(req,callback){//Add New Chat Inbox
 			//var at = d.getDate() +"/"+ (d.getMonth() - (-1)) +"/"+ d.getFullYear() ;
 			let newChatInbox = new ChatInbox({
        	 			index_count: index_count,
-				chat_id: chat_id - (-index_count),
+				chat_id: "CHAT_"+(chat_id - (-index_count)),
        	 			from_user: req.payload.user_id,
         			to_user: req.body.to_user,
 				from_user_name: req.body.from_user_name,
@@ -279,7 +279,7 @@ module.exports.addChatInbox = function(req,callback){//Add New Chat Inbox
         			to_deleted: false,
 				from_read: true,
         			to_read: false,
-				from_unread_count: 1,
+				from_unread_count: 0,
 				to_unread_count: 1,
 				createdBy: req.payload.user_id,
 				createdAt: d,
@@ -314,9 +314,15 @@ module.exports.updateChatInbox = function(req,callback){//Update chat inbox
 	updateDoc.changedBy = req.payload.user_id;
 	updateDoc.changedAt = d;
 	
-	var increment = {'from_unread_count': 1};
-	if(req.payload.user_id === req.body.from_user)
-	   increment = {'to_unread_count': 1};
+	var increment = {};
+	if(req.payload.user_id === req.body.from_user){
+		increment = {'to_unread_count': 1};
+		updateDoc.to_read = false;
+	}
+	else{
+		increment = {'from_unread_count': 1};
+		updateDoc.from_read = false;
+	}
 	
 	ChatInbox.update({chat_id: updateDoc.chat_id}, {"$set": updateDoc, "$inc": increment}, {multi: true}, (update_err, update_res)=>{
 		if(update_err){
@@ -353,6 +359,7 @@ module.exports.getChatDetail = function(req,res){//Fetch Chat Details
 	    	res.json({statusCode:"F", results: [], error: err});
 	    }
 	    else{
+		module.exports.updateChatDetail(req,chatDetails,function(data){});
 		chatDetails.sort(function(a, b){
 			if (a.changedAt < b.changedAt)
 				return -1;
@@ -442,6 +449,43 @@ module.exports.addChatDetail = function(req,res){//Add New Chat Detail
 	}
 };
 
+module.exports.updateChatDetail = function(req,chatDetails,callback){//Update Chat Detail
+	if(chatDetails && chatDetails.length > 0){
+		var updateDoc = {};
+		var d = new Date();
+		updateDoc.changedBy = req.payload.user_id;
+		updateDoc.changedAt = d;	
+		updateDoc.to_read = true;
+
+		ChatDetail.update({chat_id: chatDetails[0].chat_id, to_user: req.payload.user_id}, {"$set": updateDoc}, {multi: true}, (updateChatDetail_err, updateChatDetail_res)=>{
+			if(updateChatDetail_err){
+				callback(null);
+			}
+			else{
+				var to_updateChatInboxDoc = {};
+				var d = new Date();
+				to_updateChatInboxDoc.changedBy = req.payload.user_id;
+				to_updateChatInboxDoc.changedAt = d;	
+				to_updateChatInboxDoc.to_read = true;
+				to_updateChatInboxDoc.to_unread_count = 0;				  
+				ChatInbox.update({chat_id: chatDetails[0].chat_id, to_user: req.payload.user_id}, {"$set": to_updateChatInboxDoc}, {multi: true}, (updateChatInbox_err, updateChatInbox_res)=>{
+					var from_updateChatInboxDoc = {};
+					var d = new Date();
+					from_updateChatInboxDoc.changedBy = req.payload.user_id;
+					from_updateChatInboxDoc.changedAt = d;
+					from_updateChatInboxDoc.from_read = true;
+					from_updateChatInboxDoc.from_unread_count = 0;
+					ChatInbox.update({chat_id: chatDetails[0].chat_id, from_user: req.payload.user_id}, {"$set": from_updateChatInboxDoc}, {multi: true}, (updateChatInbox_err, updateChatInbox_res)=>{
+						callback(updateChatDetail_res);
+					});
+				});
+			}
+		});
+	}
+	else{
+		callback(null);
+	}
+};
 
 
 
