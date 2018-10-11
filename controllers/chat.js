@@ -305,35 +305,18 @@ module.exports.addChatInbox = function(req,callback){//Add New Chat Inbox
 };
 
 module.exports.updateChatInbox = function(req,callback){//Update chat inbox
-	var updateDoc = JSON.parse(JSON.stringify(req.body));
+	var updateDoc = {};
     	var d = new Date();
-	delete updateDoc.from_user;
-	delete updateDoc.to_user;
-	delete updateDoc.from_user_name;
-	delete updateDoc.to_user_name;
-	delete updateDoc.from_unread_count;
-	delete updateDoc.to_unread_count;
-	//var at = d.getDate() +"/"+ (d.getMonth() - (-1)) +"/"+ d.getFullYear() ;
 	updateDoc.changedBy = req.payload.user_id;
 	updateDoc.changedAt = d;
+	updateDoc.to_read = false;
 	
-	var increment = {};
-	if(req.payload.user_id === req.body.from_user){
-		increment = {'to_unread_count': 1};
-		updateDoc.to_read = false;
-	}
-	else{
-		increment = {'from_unread_count': 1};
+	ChatInbox.update({chat_id: req.body.chat_id, from_user: req.payload.user_id}, {"$set": updateDoc, "$inc": {'to_unread_count': 1}}, {multi: true}, (toUpdateChatInbox_err, toUpdateChatInbox_res)=>{
+		delete updateDoc.to_read;
 		updateDoc.from_read = false;
-	}
-	
-	ChatInbox.update({chat_id: updateDoc.chat_id}, {"$set": updateDoc, "$inc": increment}, {multi: true}, (update_err, update_res)=>{
-		if(update_err){
-			callback(null);//res.json({statusCode: 'F', msg: 'Failed to update', error: update_err});
-		}
-		else{
-			callback(update_res);//res.json({statusCode: 'S', msg: 'Entry updated', results: update_res});
-		}
+		ChatInbox.update({chat_id: req.body.chat_id, to_user: req.payload.user_id}, {"$set": updateDoc, "$inc": {'from_unread_count': 1}}, {multi: true}, (fromUpdateChatInbox_err, fromUpdateChatInbox_res)=>{
+			callback(toUpdateChatInbox_res);
+		});
 	});
 };
 
