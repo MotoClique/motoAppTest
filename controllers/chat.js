@@ -18,6 +18,9 @@ module.exports.getChatInbox = function(req,res){//Fetch
 	if(req.query.chat_id){
 		and_query.push({chat_id: {"$eq":req.query.chat_id}});
 	}
+	if(req.query.post_id){
+		and_query.push({post_id: {"$eq":req.query.post_id}});
+	}
 	if(req.query.from_deleted){
 		and_query.push({from_deleted: {"$eq":req.query.from_deleted}});
 	}
