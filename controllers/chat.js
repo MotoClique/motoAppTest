@@ -29,9 +29,10 @@ module.exports.getChatInbox = function(req,res){//Fetch
 		or_query.push({to_user: {"$eq":req.query.to_user}, to_deleted: {"$ne": true}});
 	}
 	
-	query['$and'] = and_query;
+	if(and_query.length>0)
+		query['$and'] = and_query;
 	if(or_query.length>0)
-	   query['$or'] = or_query;
+		query['$or'] = or_query;
 	ChatInbox.find(query,function(err, chatInboxs){
 	    if(err){
 	      res.json({statusCode:"F", results: [], error: err});
