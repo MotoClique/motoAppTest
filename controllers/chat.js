@@ -12,8 +12,7 @@ const ChatInbox = mongoose.model('ChatInbox');
 module.exports.getChatInbox = function(req,res){//Fetch
 	var query = {};
 	var and_query = [
-		{from_deleted: {"$ne": true}},
-		{to_deleted: {"$ne": true}}
+		
 	];	
 	if(req.query.chat_id){
 		and_query.push({chat_id: {"$eq":req.query.chat_id}});
