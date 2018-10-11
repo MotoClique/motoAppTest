@@ -21,19 +21,13 @@ module.exports.getChatInbox = function(req,res){//Fetch
 	if(req.query.post_id){
 		and_query.push({post_id: {"$eq":req.query.post_id}});
 	}
-	if(req.query.from_deleted){
-		and_query.push({from_deleted: {"$eq":req.query.from_deleted}});
-	}
- 	if(req.query.to_deleted){
-		and_query.push({to_deleted: {"$eq":req.query.to_deleted}});
-	}
-	
+		
 	var or_query = [];
 	if(req.query.from_user){
-		or_query.push({from_user: {"$eq":req.query.from_user}});
+		or_query.push({from_user: {"$eq":req.query.from_user}, from_deleted: {"$ne": true}});
 	}
  	if(req.query.to_user){
-		or_query.push({to_user: {"$eq":req.query.to_user}});
+		or_query.push({to_user: {"$eq":req.query.to_user}, to_deleted: {"$ne": true}});
 	}
 	
 	query['$and'] = and_query;
@@ -168,6 +162,8 @@ module.exports.getSellForChat = function(req,callback){//Get the sell detail for
 				}
 				delete postDetail.createdAt;
 				delete postDetail.changedAt;
+				delete postDetail.createdBy;
+				delete postDetail.changedBy;
 				callback(postDetail);
 			});			
 		}
@@ -196,6 +192,8 @@ module.exports.getBuyForChat = function(req,callback){//Get the buy detail for t
 				}
 				delete postDetail.createdAt;
 				delete postDetail.changedAt;
+				delete postDetail.createdBy;
+				delete postDetail.changedBy;
 				callback(postDetail);
 			});			
 		}
@@ -224,6 +222,8 @@ module.exports.getBidForChat = function(req,callback){//Get the bid detail for t
 				}
 				delete postDetail.createdAt;
 				delete postDetail.changedAt;
+				delete postDetail.createdBy;
+				delete postDetail.changedBy;
 				callback(postDetail);
 			});			
 		}
@@ -252,6 +252,8 @@ module.exports.getServiceForChat = function(req,callback){//Get the service deta
 				}
 				delete postDetail.createdAt;
 				delete postDetail.changedAt;
+				delete postDetail.createdBy;
+				delete postDetail.changedBy;
 				callback(postDetail);
 			});			
 		}
@@ -339,6 +341,9 @@ module.exports.getChatDetail = function(req,res){//Fetch Chat Details
 	if(req.query.deleted){
 		query.deleted = {"$eq":req.query.deleted};
 	}
+	else{
+		query.deleted = {"$ne":true};
+	}
  
 	ChatDetail.find(query,function(err, chatDetails){
 	    if(err){
@@ -347,9 +352,9 @@ module.exports.getChatDetail = function(req,res){//Fetch Chat Details
 	    else{
 		module.exports.updateChatDetail(req,chatDetails,function(data){});
 		chatDetails.sort(function(a, b){
-			if (a.changedAt < b.changedAt)
+			if (a.createdAt < b.createdAt)
 				return -1;
-			else if ( a.changedAt > b.changedAt)
+			else if ( a.createdAt > b.createdAt)
 				return 1;
 			return 0;
 		});//ascending sort
