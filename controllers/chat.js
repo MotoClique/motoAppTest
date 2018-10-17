@@ -47,7 +47,7 @@ module.exports.getChatInbox = function(req,res){//Fetch
 			if(chat.post_type === 'Sale'){
 				module.exports.getSellForChat(chat,function(data){
 					if(data){
-					   var obj = Object.assign({}, chat, data);
+					   var obj = Object.assign({}, chat, data); obj.post_deletion = (data.active === 'X')?false:true;
 					   myInboxs.push(obj);
 					}
 					loopCount = loopCount - (-1);
@@ -66,7 +66,7 @@ module.exports.getChatInbox = function(req,res){//Fetch
 			else if(chat.post_type === 'Buy'){
 				module.exports.getBuyForChat(chat,function(data){
 					if(data){
-					   var obj = Object.assign({}, chat, data);
+					   var obj = Object.assign({}, chat, data); obj.post_deletion = (data.active === 'X')?false:true;
 					   myInboxs.push(obj);
 					}
 					loopCount = loopCount - (-1);
@@ -85,7 +85,7 @@ module.exports.getChatInbox = function(req,res){//Fetch
 			else if(chat.post_type === 'Bid'){
 				module.exports.getBidForChat(chat,function(data){
 					if(data){
-					   var obj = Object.assign({}, chat, data);
+					   var obj = Object.assign({}, chat, data); obj.post_deletion = (data.bid_valid_to >= new Date())?false:true;
 					   myInboxs.push(obj);
 					}
 					loopCount = loopCount - (-1);
@@ -104,7 +104,7 @@ module.exports.getChatInbox = function(req,res){//Fetch
 			else if(chat.post_type === 'Service'){
 				module.exports.getServiceForChat(chat,function(data){
 					if(data){
-					   var obj = Object.assign({}, chat, data);
+					   var obj = Object.assign({}, chat, data); obj.post_deletion = (data.active === 'X')?false:true;
 					   myInboxs.push(obj);
 					}
 					loopCount = loopCount - (-1);
