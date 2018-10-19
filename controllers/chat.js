@@ -507,6 +507,9 @@ module.exports.getNewChatCount = function(req,res){//Fetch the count of new inco
 			});
 			res.json({statusCode:"S", results: newChats, error: err, count: chatCounts});
 		}
+		else{
+			res.json({statusCode:"S", results: newChats, error: err, count: 0});
+		}
 	});
 };
 
