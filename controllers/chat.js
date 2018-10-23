@@ -5,6 +5,7 @@ const Buy = mongoose.model('Buy');
 const Bid = mongoose.model('Bid');
 const Service = mongoose.model('Service');
 const Thumbnail = mongoose.model('Thumbnail');
+var ctrlNotification = require('./notification');
 
 //////////////////////////Chat Inbox////////////////////////////////
 const ChatInbox = mongoose.model('ChatInbox');
@@ -392,6 +393,7 @@ module.exports.addChatDetail = function(req,res){//Add New Chat Detail
 						res.json({statusCode: 'F', msg: 'Failed to send', error: chatdetail_err});
 					}
 					else{
+						ctrlNotification.sendAppPushNotification(req.body);
 						res.json({statusCode: 'S', msg: 'Sent Successfully.', results: chatdetail_res});
 					}
 			});
@@ -429,6 +431,7 @@ module.exports.addChatDetail = function(req,res){//Add New Chat Detail
 						res.json({statusCode: 'F', msg: 'Failed to send', error: chatdetail_err});
 					}
 					else{
+						ctrlNotification.sendAppPushNotification(req.body);
 						res.json({statusCode: 'S', msg: 'Sent Successfully.', results: chatdetail_res});
 					}
 			});
