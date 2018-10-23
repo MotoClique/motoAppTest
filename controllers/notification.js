@@ -8,6 +8,7 @@ var Profile = mongoose.model('Profile');
 var UserSubMap = mongoose.model('UserSubMap');
 var UserAlert = mongoose.model('UserAlert');
 var Parameter = mongoose.model('Parameter');
+var DeviceReg = mongoose.model('DeviceReg');
 
 module.exports.sendNotification = function(doc){//Send
 	//Get API Keys
@@ -435,5 +436,50 @@ module.exports.sendNotification = function(doc){//Send
 	});
 
 	
+};
+
+
+module.exports.sendAppPushNotification = function(doc){//Send push notification to app
+	//Get User Device reg id
+	DeviceReg.find({user_id: doc.user_id},function(err_reg, result_reg){
+		if(result_reg && result_reg.length>0){
+			var device_reg_id = result_reg[0].device_reg_id;
+			//Get API Keys
+			Parameter.find({},function(err_param, result_param){
+				var params = {};
+				if(result_param){
+					for(var p =0; p<result_param.length; p++){
+						params[result_param[p].parameter] = result_param[p].value;
+					}			
+					
+					request.post({
+							url:'https://fcm.googleapis.com/fcm/send', 
+							form: {
+								"notification":{
+									"title": doc.user_name,
+									"body": doc.text,
+									"sound":"default",
+									"click_action":"FCM_PLUGIN_ACTIVITY",
+									"icon":"fcm_push_icon"
+								  },
+								"data":{
+									"param1":"value1",
+									"param2":"value2"
+								  },
+								"to": device_reg_id,
+								"priority":"high",
+								"restricted_package_name":""
+							},
+							headers: {
+								'Authorization': 'Key='+params['fcm_server_logical_key']
+							}
+						},
+						function(err_push,httpResponse,body){
+							console.log(err_push);
+						});
+				}
+			});
+		}
+	});
 };
 
