@@ -441,7 +441,7 @@ module.exports.sendNotification = function(doc){//Send
 
 module.exports.sendAppPushNotification = function(doc){//Send push notification to app
 	//Get User Device reg id
-	DeviceReg.find({user_id: doc.user_id},function(err_reg, result_reg){
+	DeviceReg.find({user_id: doc.to_user},function(err_reg, result_reg){
 		if(result_reg && result_reg.length>0){
 			var device_reg_id = result_reg[0].device_reg_id;
 			//Get API Keys
@@ -456,7 +456,7 @@ module.exports.sendAppPushNotification = function(doc){//Send push notification 
 							url:'https://fcm.googleapis.com/fcm/send', 
 							form: {
 								"notification":{
-									"title": doc.user_name,
+									"title": doc.from_user_name,
 									"body": doc.text,
 									"sound":"default",
 									"click_action":"FCM_PLUGIN_ACTIVITY",
