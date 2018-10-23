@@ -4,6 +4,7 @@ var User = mongoose.model('User');
 var Profile = mongoose.model('Profile');
 var Otp = mongoose.model('Otp');
 var Counter = mongoose.model('Counter');
+var DeviceReg = mongoose.model('DeviceReg');
 const async = require("async");
 const request = require('request');
 
@@ -70,12 +71,23 @@ module.exports.register = function(req, res) {
 									newUserProfile.save((profile_err, profile_user)=>{
 										var token;
 										token = user.generateJwt();
-										res.status(200);
-										res.json({
-										  "token" : token,
-										  "statusCode": "S",
-										  "results": result
+										module.exports.registerDevice({user_id:user.user_id, device_reg_id:req.body.device_reg_id},function(state,return_msg){
+											if(state){
+											      	res.status(200);
+												res.json({
+												  "token" : token,
+												  "statusCode": "S",
+												  "results": result
+												});
+											}
+											else{
+												res.status(401).json({
+													"statusCode": "F",
+													"msg" : return_msg
+												});
+											}
 										});
+										
 									});
 									
 								  }
@@ -113,11 +125,21 @@ module.exports.login = function(req, res) {
     // If a user is found
     if(user){
       token = user.generateJwt();
-      res.status(200);
-      res.json({
-		"statusCode": "S",
-		"token" : token
-      });
+      module.exports.registerDevice({user_id:user.user_id, device_reg_id:req.body.device_reg_id},function(state,return_msg){
+		if(state){
+		      res.status(200);
+		      res.json({
+				"statusCode": "S",
+				"token" : token
+		      });
+		}
+		else{
+			res.status(401).json({
+				"statusCode": "F",
+				"msg" : return_msg
+			});
+		}
+	});
     } else {
       // If user is not found
       res.status(401).json({
@@ -197,9 +219,19 @@ module.exports.loginByOtp = function(req,res){//get mobile & Otp combination
 						user.mobile = users[0].mobile;
 						user.admin = users[0].admin;
 						var token = user.generateJwt();
-						res.json({
-							"statusCode":"S","msg":"Successfully","results":otps,
-							"token" : token
+						module.exports.registerDevice({user_id:user.user_id, device_reg_id:req.query.device_reg_id},function(state,return_msg){
+							if(state){
+								res.json({
+								"statusCode":"S","msg":"Successfully","results":otps,
+								"token" : token
+								});
+							}
+							else{
+								res.json({
+									"statusCode":"F",
+									"msg":return_msg
+								});	      
+							}
 						});
 					}
 					else{
@@ -286,5 +318,40 @@ module.exports.changePassword = function(req, res) {
 			}
 		}
 	});
+};
+
+
+module.exports.registerDevice = function(doc,callback){//Register device to user
+	if(doc.device_reg_id){
+		//Confirm if Device is already reistered to a user
+		DeviceReg.find({user_id: doc.user_id},function(err_reg, result_reg){
+			if(err_reg){
+				callback(false,"Unable to identify the user.");
+			}
+			else if(result_reg && result_reg.length>0){
+				if(result_reg[0].device_reg_id === doc.device_reg_id)
+					callback(true,"No Registeration required.");
+				else
+					callback(false,"User is already logged into another device.");
+			}
+			else{
+				var device = new DeviceReg();
+				device.user_id = doc.user_id;
+				device.device_reg_id = doc.device_reg_id;
+
+				device.save(function(save_err,save_result) {
+					if(save_err){
+						callback(false,"Unable to register.");
+					}
+					else{
+						callback(true,"Successfully registered.");
+					}
+				});
+			}
+		});
+	}
+	else{
+		callback(false,"No device id to register.");
+	}
 };
 
