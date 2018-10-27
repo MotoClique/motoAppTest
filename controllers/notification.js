@@ -454,7 +454,7 @@ module.exports.sendAppPushNotification = function(doc){//Send push notification 
 					
 					request.post({
 							url:'https://fcm.googleapis.com/fcm/send', 
-							form: {
+							body: JSON.stringify({
 								"notification":{
 									"title": doc.from_user_name,
 									"body": doc.text,
@@ -469,8 +469,9 @@ module.exports.sendAppPushNotification = function(doc){//Send push notification 
 								"to": device_reg_id,
 								"priority":"high",
 								"restricted_package_name":""
-							},
+							}),
 							headers: {
+								'content-type': 'application/json',
 								'Authorization': 'Key='+params['fcm_server_logical_key']
 							}
 						},
