@@ -328,9 +328,12 @@ module.exports.registerDevice = function(doc,callback){//Register device to user
 			if(err_reg){
 				callback(false,"Unable to identify the user.");
 			}
+			else if(doc.device_reg_id === 'empty'){
+				callback(true,"No Registration required.");
+			}
 			else if(result_reg && result_reg.length>0){
 				if(result_reg[0].device_reg_id === doc.device_reg_id)
-					callback(true,"No Registeration required.");
+					callback(true,"No Registration required.");
 				else
 					callback(false,"User is already logged into another device.");
 			}
