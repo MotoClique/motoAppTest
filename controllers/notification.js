@@ -452,6 +452,7 @@ module.exports.sendAppPushNotification = function(doc){//Send push notification 
 						params[result_param[p].parameter] = result_param[p].value;
 					}			
 					
+					module.exports.sendAppBadgeCount({device_reg_id:device_reg_id, fcm_server_logical_key:params['fcm_server_logical_key']});
 					request.post({
 							url:'https://fcm.googleapis.com/fcm/send', 
 							body: JSON.stringify({
@@ -482,5 +483,25 @@ module.exports.sendAppPushNotification = function(doc){//Send push notification 
 			});
 		}
 	});
+};
+
+module.exports.sendAppBadgeCount = function(doc){//Send push notification for increasing badge count to app
+					request.post({
+							url:'https://fcm.googleapis.com/fcm/send', 
+							body: JSON.stringify({
+								"data":{
+									"badge":"true",
+								},
+								"to": doc.device_reg_id,
+								"priority":"high"
+							}),
+							headers: {
+								'content-type': 'application/json',
+								'Authorization': 'Key='+doc['fcm_server_logical_key']
+							}
+						},
+						function(err_push,httpResponse,body){
+							console.log(err_push);
+						});
 };
 
