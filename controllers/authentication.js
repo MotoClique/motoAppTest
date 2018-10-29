@@ -239,20 +239,41 @@ module.exports.loginByOtp = function(req,res){//get mobile & Otp combination
 						user.mobile = users[0].mobile;
 						user.admin = users[0].admin;
 						var token = user.generateJwt();
-						module.exports.registerDevice({user_id:user.user_id, device_reg_id:req.query.device_reg_id},function(state,return_msg){
-							if(state){
-								res.json({
-								"statusCode":"S","msg":"Successfully","results":otps,
-								"token" : token
-								});
-							}
-							else{
-								res.json({
-									"statusCode":"F",
-									"msg":return_msg
-								});	      
-							}
-						});
+						
+						if(req.query.reregister){
+							module.exports.reRegisterDevice({user_id:user.user_id, device_reg_id:req.query.device_reg_id},function(state,return_msg){
+								if(state){
+								      res.status(200);
+								      res.json({
+										"statusCode": "S","msg":"Successfully","results":otps,
+										"token" : token
+								      });
+								}
+								else{
+									res.status(401).json({
+										"statusCode": "F",
+										"msg" : return_msg
+									});
+								}
+							});
+						}
+						else{
+							module.exports.registerDevice({user_id:user.user_id, device_reg_id:req.query.device_reg_id},function(state,return_msg,registered){
+								if(state){
+									res.json({
+									"statusCode":"S","msg":"Successfully","results":otps,
+									"token" : token
+									});
+								}
+								else{
+									res.json({
+										"statusCode":"F",
+										"msg":return_msg,
+										"registered": (registered === true)?true:false
+									});	      
+								}
+							});
+						}
 					}
 					else{
 						res.json({"statusCode":"F","msg":"Unable to validate OTP.","error":err_otp});
