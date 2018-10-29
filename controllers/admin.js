@@ -25,7 +25,7 @@ module.exports.profileRead = function(req,res){//Fetch
 		else{
 			if(result_reg && result_reg.length>0){
 				if(result_reg[0].device_reg_id !== req.query.device_reg_id)
-					res.json({statusCode:"F", msg:"Sorry! Device is not registered.", results: null,error: null});
+					res.json({statusCode:"F", msg:"Sorry! Device is not registered.", unknown_device:true, results: null,error: null});
 			}
 			var query = {};
 			if(req.query.user_id){
