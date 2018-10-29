@@ -125,21 +125,41 @@ module.exports.login = function(req, res) {
     // If a user is found
     if(user){
       token = user.generateJwt();
-      module.exports.registerDevice({user_id:user.user_id, device_reg_id:req.body.device_reg_id},function(state,return_msg){
-		if(state){
-		      res.status(200);
-		      res.json({
-				"statusCode": "S",
-				"token" : token
-		      });
-		}
-		else{
-			res.status(401).json({
-				"statusCode": "F",
-				"msg" : return_msg
-			});
-		}
-	});
+	if(req.body.reregister){
+		module.exports.reRegisterDevice({user_id:user.user_id, device_reg_id:req.body.device_reg_id},function(state,return_msg){
+			if(state){
+			      res.status(200);
+			      res.json({
+					"statusCode": "S",
+					"token" : token
+			      });
+			}
+			else{
+				res.status(401).json({
+					"statusCode": "F",
+					"msg" : return_msg
+				});
+			}
+		});
+	}
+	else{
+	      module.exports.registerDevice({user_id:user.user_id, device_reg_id:req.body.device_reg_id},function(state,return_msg,registered){
+			if(state){
+			      res.status(200);
+			      res.json({
+					"statusCode": "S",
+					"token" : token
+			      });
+			}
+			else{
+				res.status(401).json({
+					"statusCode": "F",
+					"msg" : return_msg,
+					"registered": (registered === true)?true:false
+				});
+			}
+		});
+	}
     } else {
       // If user is not found
       res.status(401).json({
@@ -335,9 +355,41 @@ module.exports.registerDevice = function(doc,callback){//Register device to user
 				if(result_reg[0].device_reg_id === doc.device_reg_id)
 					callback(true,"No Registration required.");
 				else
-					callback(false,"User is already logged into another device.");
+					callback(false,"User is already logged into another device.",true);
 			}
 			else{
+				var device = new DeviceReg();
+				device.user_id = doc.user_id;
+				device.device_reg_id = doc.device_reg_id;
+
+				device.save(function(save_err,save_result) {
+					if(save_err){
+						callback(false,"Unable to register.");
+					}
+					else{
+						callback(true,"Successfully registered.");
+					}
+				});
+			}
+		});
+	}
+	else{
+		callback(false,"No device id to register.");
+	}
+};
+
+module.exports.reRegisterDevice = function(doc,callback){//ReRegister another device to user
+	if(doc.device_reg_id){
+		//Remove Registered Device to a user
+		DeviceReg.remove({user_id: doc.user_id},function(err_reg, result_reg){
+			if(err_reg){
+				callback(false,"Unable to remove the device registration for the user.");
+			}
+			else if(doc.device_reg_id === 'empty'){
+				callback(true,"No UnRegistration required.");
+			}
+			else{
+				//Register the new Device
 				var device = new DeviceReg();
 				device.user_id = doc.user_id;
 				device.device_reg_id = doc.device_reg_id;
