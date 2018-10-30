@@ -219,29 +219,29 @@ module.exports.sendOTP = function(req,res){
 };
 
 module.exports.loginByOtp = function(req,res){//get mobile & Otp combination
-	if(req.query.mobile && req.query.otp){
+	if(req.body.mobile && req.body.otp){
 		var q = {};
-		q.mobile = {"$eq":req.query.mobile};
+		q.mobile = {"$eq":req.body.mobile};
 		q.deleted = {"$ne": true};
 		Profile.find(q,function(err, users){
 			if(users.length > 0){
 				var query = {};
-				query.mobile = {"$eq":req.query.mobile};
-				query.otp = {"$eq":req.query.otp};
+				query.mobile = {"$eq":req.body.mobile};
+				query.otp = {"$eq":req.body.otp};
 				Otp.find(query,function(err_otp, otps){
 					if(err_otp){
 						res.json({"statusCode":"F","msg":"Unable to validate OTP.","error":err_otp});
 					}
 					//else if(otps.length>0){
-					else if(req.query.otp === '7654'){
+					else if(req.body.otp === '7654'){
 						var user = new User();
 						user.user_id = users[0].user_id;
 						user.mobile = users[0].mobile;
 						user.admin = users[0].admin;
 						var token = user.generateJwt();
 						
-						if(req.query.reregister){
-							module.exports.reRegisterDevice({user_id:user.user_id, device_reg_id:req.query.device_reg_id},function(state,return_msg){
+						if(req.body.reregister){
+							module.exports.reRegisterDevice({user_id:user.user_id, device_reg_id:req.body.device_reg_id},function(state,return_msg){
 								if(state){
 								      res.status(200);
 								      res.json({
@@ -258,7 +258,7 @@ module.exports.loginByOtp = function(req,res){//get mobile & Otp combination
 							});
 						}
 						else{
-							module.exports.registerDevice({user_id:user.user_id, device_reg_id:req.query.device_reg_id},function(state,return_msg,registered){
+							module.exports.registerDevice({user_id:user.user_id, device_reg_id:req.body.device_reg_id},function(state,return_msg,registered){
 								if(state){
 									res.json({
 									"statusCode":"S","msg":"Successfully","results":otps,

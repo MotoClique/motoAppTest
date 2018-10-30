@@ -18,24 +18,24 @@ module.exports.profileRead = function(req,res){//Fetch
 		  "message" : "Unauthorized Access."
 		});
 	} else {
-	DeviceReg.find({user_id: req.query.user_id},function(err_reg, result_reg){
+	DeviceReg.find({user_id: req.body.user_id},function(err_reg, result_reg){
 		if(err_reg){
 		   res.json({statusCode:"F", msg:"Unable to identify the device", results: null,error: err_reg});
 		}
 		else{
 			if(result_reg && result_reg.length>0){
-				if(result_reg[0].device_reg_id !== req.query.device_reg_id)
+				if(result_reg[0].device_reg_id !== req.body.device_reg_id)
 					res.json({statusCode:"F", msg:"Sorry! Device is not registered.", unknown_device:true, results: null,error: null});
 			}
 			var query = {};
-			if(req.query.user_id){
-				query.user_id = {"$eq":req.query.user_id};
+			if(req.body.user_id){
+				query.user_id = {"$eq":req.body.user_id};
 			}
-			if(req.query.mobile){
-				query.mobile = {"$eq":req.query.mobile};
+			if(req.body.mobile){
+				query.mobile = {"$eq":req.body.mobile};
 			}
-			if(req.query.deleted){
-				query.deleted = {"$eq":req.query.deleted};
+			if(req.body.deleted){
+				query.deleted = {"$eq":req.body.deleted};
 			}
 			else{
 				query.deleted = {"$ne": true};
