@@ -135,7 +135,7 @@ module.exports.login = function(req, res) {
 			      });
 			}
 			else{
-				res.status(401).json({
+				res.json({
 					"statusCode": "F",
 					"msg" : return_msg
 				});
@@ -152,7 +152,7 @@ module.exports.login = function(req, res) {
 			      });
 			}
 			else{
-				res.status(401).json({
+				res.json({
 					"statusCode": "F",
 					"msg" : return_msg,
 					"registered": (registered === true)?true:false
@@ -250,7 +250,7 @@ module.exports.loginByOtp = function(req,res){//get mobile & Otp combination
 								      });
 								}
 								else{
-									res.status(401).json({
+									res.json({
 										"statusCode": "F",
 										"msg" : return_msg
 									});
