@@ -9,6 +9,7 @@ var UserSubMap = mongoose.model('UserSubMap');
 var UserAlert = mongoose.model('UserAlert');
 var Parameter = mongoose.model('Parameter');
 var DeviceReg = mongoose.model('DeviceReg');
+var ChatInbox = mongoose.model('ChatInbox');
 
 module.exports.sendNotification = function(doc){//Send
 	//Get API Keys
