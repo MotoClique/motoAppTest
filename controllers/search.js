@@ -1120,6 +1120,9 @@ module.exports.getUserFilters = function(req,query,results,callback,context){//G
 	query_filter.user_id = {"$eq":req.payload.user_id};
 	query_filter.deleted = {"$ne": true};			
 	Filter.find(query_filter,function(err_filter, result_filter){
+		if(req.body.userFilter && Array.isArray(req.body.userFilter)){
+			result_filter = req.body.userFilter;
+		}
 		for(var i=0; i<result_filter.length; i++){
 			if(result_filter[i].filter_value && result_filter[i].filter_field && result_filter[i].filter_value !== 'All'){//If Filter Value & Field is there
 				if(result_filter[i].filter_field === 'km_run_from'){
