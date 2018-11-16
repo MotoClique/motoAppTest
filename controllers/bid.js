@@ -10,6 +10,7 @@ var ctrlCommon = require('./common');
 const Thumbnail = mongoose.model('Thumbnail');
 const Image = mongoose.model('Image');
 const BidBy = mongoose.model('BidBy');
+const ChatInbox = mongoose.model('ChatInbox');
 
 //////////////////////////Bid////////////////////////////////
 const Bid = mongoose.model('Bid');
@@ -398,6 +399,9 @@ module.exports.deleteBid = function(req,res){//Delete
 			res.json({statusCode:"F", msg:"Unable to delete the Post.", error:post_err});
 		}
 		else{
+			ChatInbox.update({post_id: req.params.id}, {"$set": {post_deletion: true}}, {multi: true}, (updateChat_err, updateChat_res)=>{
+
+			});
 			BidBy.remove({bid_id: req.params.id}, function(bidby_err,bidby_result){
 				if(bidby_err){
 					res.json({statusCode:"F", msg:"Unable to delete the Participants.", error:bidby_err});
