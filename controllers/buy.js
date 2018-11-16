@@ -7,6 +7,7 @@ const UserSubMap = mongoose.model('UserSubMap');
 const Counter = mongoose.model('Counter');
 const Thumbnail = mongoose.model('Thumbnail');
 const Image = mongoose.model('Image');
+const ChatInbox = mongoose.model('ChatInbox');
 
 //////////////////////////Buy////////////////////////////////
 const Buy = mongoose.model('Buy');
@@ -208,6 +209,9 @@ module.exports.deleteBuy = function(req,res){//Delete
 			res.json({statusCode:"F", msg:"Unable to delete the Post.", error:post_err});
 		}
 		else{
+			ChatInbox.update({post_id: req.params.id}, {"$set": {post_deletion: true}}, {multi: true}, (updateChat_err, updateChat_res)=>{
+
+			});
 			Thumbnail.remove({transaction_id: req.params.id}, function(thumbnail_err,thumbnail_result){
 				if(thumbnail_err){
 					res.json({statusCode:"F", msg:"Unable to delete the Thumbnails.", error:thumbnail_err});
