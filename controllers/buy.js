@@ -198,6 +198,9 @@ module.exports.updateBuy = function(req,res){//Update
 			res.json({statusCode: 'F', msg: 'Failed to update', error: err});
 		}
 		else{
+			if(doc.active === '-'){
+				ChatInbox.update({post_id: doc.buy_req_id}, {"$set": {post_deletion: true}}, {multi: true}, (updateChat_err, updateChat_res)=>{ });
+			}
 			res.json({statusCode: 'S', msg: 'Entry updated', updated: updated});
 		}
 	});
