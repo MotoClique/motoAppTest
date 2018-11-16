@@ -383,6 +383,9 @@ module.exports.updateBid = function(req,res){//Update
 					res.json({statusCode: 'F', msg: 'Failed to update', error: err});
 				}
 				else{
+					if(doc.msg === 'D'){
+						ChatInbox.update({post_id: doc.bid_id}, {"$set": {post_deletion: true}}, {multi: true}, (updateChat_err, updateChat_res)=>{ });
+					}
 					res.json({statusCode: 'S', msg: 'Entry updated', updated: updated});
 				}
 			});
