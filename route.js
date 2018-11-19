@@ -251,7 +251,9 @@ router.get('/public/node/freshChatCount', auth, ctrlChat.getNewChatCount);
 router.get('/public/node/chatDetail', auth, ctrlChat.getChatDetail);
 router.post('/public/node/chatDetail', auth, ctrlChat.addChatDetail);
 
-
+// Export/Import table - CSV
+var ctrlExportImportTable = require('./controllers/export_import_table');
+router.get('/exportToCsv/:id', ctrlExportImportTable.exportToCsv);
 
 
 module.exports = router;
