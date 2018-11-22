@@ -78,6 +78,7 @@ module.exports.importFromCsv = function(req,res){
 		var loopCount = 0;
 		var responseData = {success:[], failed:[]};
 		collectionData.forEach(function(entry,index,arr){
+			delete entry.__v;
 			(mongoose_models[req.body.collection]).update({_id:entry._id},{$set: entry},{upsert:true}, function(update_err, update_data) {
 				if(update_err){
 					(responseData['failed']).push({_id:entry._id, error:update_err});
