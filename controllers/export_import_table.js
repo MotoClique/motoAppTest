@@ -80,7 +80,7 @@ module.exports.importFromCsv = function(req,res){
 		collectionData.forEach(function(entry,index,arr){
 			(mongoose_models[req.body.collection]).update({_id:entry._id},{$set: entry},{upsert:true}, function(update_err, update_data) {
 				if(update_err){
-					(responseData['failed']).push({_id:entry._id});
+					(responseData['failed']).push({_id:entry._id, error:update_err});
 				}
 				else{
 					(responseData['success']).push({_id:entry._id});
@@ -88,7 +88,12 @@ module.exports.importFromCsv = function(req,res){
 				
 				loopCount = loopCount - (-1);
 				if(loopCount === collectionData.length){
-					res.json({statusCode: 'S', msg: 'Import Completed.', result:responseData, error: null});
+					var msg = 'Import Successfully Completed.';
+					if((responseData['success']).length>0 && (responseData['failed']).length>0)
+					   msg = 'Import Partially Completed.';
+					else if((responseData['success']).length===0 && (responseData['failed']).length>0)
+					   msg = 'None of the entries were Imported.';
+					res.json({statusCode: 'S', msg: msg, result:responseData, error: null});
 				}
 			});
 		});
