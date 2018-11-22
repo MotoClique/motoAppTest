@@ -71,3 +71,31 @@ module.exports.exportToCsv = function(req,res){
 		res.json({statusCode: 'F', msg: 'Unknown table name', error: null});
 	}
 };
+
+module.exports.importFromCsv = function(req,res){
+	if(req.body.data && req.body.collection && mongoose_models[req.body.collection]){
+		var collectionData = req.body.data;
+		var loopCount = 0;
+		var responseData = {success:[], failed:[]};
+		collectionData.forEach(function(entry,index,arr){
+			(mongoose_models[req.body.collection]).update({_id:entry._id},{$set: entry},{upsert:true}, function(update_err, update_data) {
+				if(update_err){
+					(responseData['failed']).push({_id:entry._id});
+				}
+				else{
+					(responseData['success']).push({_id:entry._id});
+				}
+				
+				loopCount = loopCount - (-1);
+				if(loopCount === collectionData.length){
+					res.json({statusCode: 'S', msg: 'Import Completed.', result:responseData, error: null});
+				}
+			});
+		});
+	}
+	else{
+		res.statusCode = 400;
+		res.json({statusCode: 'F', msg: 'Unknown table name/data', error: null});
+	}
+};
+
