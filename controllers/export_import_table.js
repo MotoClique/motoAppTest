@@ -77,7 +77,21 @@ module.exports.importFromCsv = function(req,res){
 		var collectionData = req.body.data;
 		var loopCount = 0;
 		var responseData = {success:[], failed:[]};
-		collectionData.forEach(function(entry,index,arr){
+		collectionData.forEach(function(currentVal,index,arr){
+			var entry = {};
+			for (var key in currentVal) {
+				if(currentVal.hasOwnProperty(key)){
+					if((mongoose_models[req.body.collection]).schema.path(key)){
+						if((mongoose_models[req.body.collection]).schema.path(key).instance == 'Date'){
+							entry[key] = new Date(currentVal[key]);
+						}
+						else{
+							entry[key] = currentVal[key];
+						}
+					}
+				}
+			}
+			
 			delete entry.__v;
 			(mongoose_models[req.body.collection]).update({_id:entry._id},{$set: entry},{upsert:true}, function(update_err, update_data) {
 				if(update_err){
