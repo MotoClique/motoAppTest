@@ -52,12 +52,31 @@ module.exports.exportToCsv = function(req,res){
 				res.json({statusCode: 'F', msg: 'Unable to read table', error: export_err});
 			}
 			else if(export_data){
+				var data_to_export = [];
+				export_data.forEach(function(currentVal,index,arr){
+					var entry = {};
+					for (var key in currentVal) {
+						if(currentVal.hasOwnProperty(key)){
+							if((mongoose_models[req.params.id]).schema.path(key)){
+								if((mongoose_models[req.params.id]).schema.path(key).instance == 'Buffer'){
+									entry[key] = (currentVal[key]).toString('base64');
+								}
+								else{
+									entry[key] = currentVal[key];
+								}
+							}
+						}
+					}
+					
+					data_to_export.push(entry);
+				});
+				
 				var filename = (req.params.id)+'.csv';
 				res.statusCode = 200;
 				res.setHeader('Content-Type', 'text/csv');
 				res.setHeader("Content-Disposition", 'attachment; filename='+filename);
 				res.csv(
-					 export_data
+					 data_to_export
 				,true);
 			}
 			else{
