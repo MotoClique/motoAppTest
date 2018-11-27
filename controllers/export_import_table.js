@@ -104,6 +104,9 @@ module.exports.importFromCsv = function(req,res){
 						if((mongoose_models[req.body.collection]).schema.path(key).instance == 'Date'){
 							entry[key] = new Date(currentVal[key]);
 						}
+						else if ((mongoose_models[req.body.collection]).schema.path(key).instance == 'Buffer'){
+							entry[key] = new Buffer(currentVal[key],'base64');	 
+						}
 						else{
 							entry[key] = currentVal[key];
 						}
